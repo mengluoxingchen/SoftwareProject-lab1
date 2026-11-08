@@ -1,0 +1,68 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #F2F2F2
+skinparam ParticipantBorderColor #777777
+skinparam ActorBorderColor #555555
+skinparam ArrowColor #333333
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #999999
+title 账目提交与审核时序图
+actor "普通成员" as Member
+boundary "系统界面" as UI
+participant "用户与账本管理" as Identity
+participant "账目管理" as Expense
+participant "审核与状态管理" as Review
+participant "操作日志管理" as Log
+actor "管理员" as Admin
+
+note over Member, Log
+场景前提：提交校验通过、无需相似记录确认；
+审核时权限合法、账目待审核且未被锁定；驳回示例中原因已填写。
+end note
+Member -> UI : 填写并提交账目
+UI -> Expense : 提交账目及分摊信息
+Expense -> Identity : 验证成员身份和记账权限
+Identity --> Expense : 验证通过
+Expense -> Expense : 校验字段、分摊及重复提交
+Expense -> Review : 提交账目，进入待审核
+Review --> Expense : 返回待审核状态
+Expense -> Log : 记录提交操作
+Expense --> UI : 返回提交结果
+UI --> Member : 显示待审核状态
+
+... 管理员稍后审核 ...
+Admin -> UI : 选择待审核账目
+UI -> Review : 请求审核账目
+Review -> Identity : 验证管理员权限
+Identity --> Review : 验证通过
+Review -> Expense : 检查账目状态和编辑锁
+Expense --> Review : 待审核且未锁定
+Review --> UI : 返回待审核账目和相似记录
+UI --> Admin : 展示账目和相似记录
+note over Admin, Review
+管理员核对相似记录；同一笔支出最多通过一条。
+end note
+alt 管理员选择通过
+  Admin -> UI : 确认通过
+  UI -> Review : 提交通过决定
+  Review -> Expense : 更新状态为已通过
+  Expense --> Review : 状态更新成功
+  Review -> Log : 记录审核人、时间和结果
+  Review --> UI : 返回审核结果
+  UI --> Admin : 显示审核成功
+else 管理员选择驳回
+  Admin -> UI : 填写原因并提交驳回
+  UI -> Review : 提交驳回决定及原因
+  Review -> Expense : 更新状态为已驳回
+  Expense --> Review : 状态更新成功
+  Review -> Log : 记录审核人、时间、结果及原因
+  Review --> UI : 返回驳回结果
+  UI --> Admin : 显示驳回成功
+  Review -> Member : 通知驳回结果
+end
+@enduml
+
+

@@ -1,0 +1,29 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam nodesep 120
+skinparam ranksep 135
+skinparam packageStyle rectangle
+left to right direction
+title 多人共享记账系统组件图
+package "核心业务模块" as Business {
+  component "用户与账本管理" as User
+  component "账目管理" as Expense
+  component "审核与状态管理" as Audit
+  component "结算与还款" as Settle
+  User --> Expense : 成员与权限
+  Expense --> Audit : 提交/重新提交
+  Audit --> Expense : 审核结果及状态
+  Audit --> Settle : 已通过账目
+  Expense --> Settle : 退款与结算后补记
+}
+component "查询与统计" as Query
+component "操作日志管理" as Log
+Business --> Query : \n业务数据与权限
+Business --> Log : 关键操作记录
+@enduml
+
+

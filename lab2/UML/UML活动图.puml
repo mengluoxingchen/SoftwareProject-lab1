@@ -1,0 +1,68 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam activityBackgroundColor #F2F2F2
+skinparam activityBorderColor #777777
+skinparam ArrowColor #333333
+skinparam activityDiamondBackgroundColor #FFFFFF
+skinparam activityDiamondBorderColor #777777
+title 账目提交与审核活动图
+|普通成员|
+start
+:填写账目、分摊信息;
+:选择开销类型及分摊方式并提交;
+|系统|
+:校验必填项、金额及分摊规则;
+if (校验通过？) then (否)
+  :拦截提交并提示错误;
+  stop
+else (是)
+endif
+if (同一用户完全重复提交？) then (是)
+  :拦截提交并提示;
+  stop
+else (否)
+endif
+if (其他用户存在相似记录？) then (是)
+  :提示可能重复;
+  |普通成员|
+  if (确认继续提交？) then (否)
+    stop
+  else (是)
+  endif
+  |系统|
+else (否)
+endif
+:账目状态设为待审核;
+:记录提交操作;
+|管理员|
+:查看待审核账目并发起审核;
+|系统|
+if (账目正在被修改？) then (是)
+  :禁止审核并提示稍后重试;
+  stop
+else (否)
+endif
+|管理员|
+:核对账目和相似记录;
+:同一笔支出最多通过一条;
+if (审核决定？) then (通过)
+  |系统|
+  :状态更新为已通过;
+  :记录审核人、时间和结果;
+else (驳回)
+  |管理员|
+  :填写驳回原因;
+  |系统|
+  if (原因已填写？) then (否)
+    :拒绝驳回并提示填写原因;
+    stop
+  else (是)
+    :状态更新为已驳回;
+    :记录审核人、时间和结果;
+    :通知提交人驳回结果;
+  endif
+endif
+stop
+@enduml
