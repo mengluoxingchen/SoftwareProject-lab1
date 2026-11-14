@@ -38,6 +38,13 @@ private:
              const QString& target, const QString& detail);
     QJsonObject registerUser(const QJsonObject& parameters);
     QJsonObject login(const QJsonObject& parameters);
+    QJsonObject accountSecurity(const QString& actor) const;
+    QJsonObject changePassword(const QString& actor, const QJsonObject& parameters);
+    QJsonObject generateRecoveryCode(const QString& actor, const QJsonObject& parameters);
+    QJsonObject resetPassword(const QJsonObject& parameters);
+    void verifyCurrentPassword(const QString& actor, const QString& password);
+    QString storeRecoveryCode(const QString& actor);
+    void recordSecurityEvent(const QString& actor, const QString& action);
     QJsonObject listLedgers(const QString& actor) const;
     QJsonObject createLedger(const QString& actor, const QJsonObject& parameters);
     QJsonObject ledgerDetails(const QString& actor, const QJsonObject& parameters) const;
@@ -58,6 +65,7 @@ private:
     QSqlDatabase database_;
     Clock clock_;
     QHash<QString, LoginAttempt> login_attempts_;
+    QHash<QString, LoginAttempt> security_attempts_;
     ExpenseService expenses_;
     SettlementService settlements_;
     FinanceService finances_;

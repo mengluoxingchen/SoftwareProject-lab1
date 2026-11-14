@@ -15,6 +15,10 @@
 
 没有默认账号。从“注册”创建自己的账号；创建账本者为管理员，可按用户名邀请其他已注册用户，对方接受后加入。记账时选择实际付款人和费用承担人，再提交、审核和结算。
 
+版本0.9.4新增账号安全。新注册后请保存仅当次展示的恢复码。旧账号登录后在右上角“账号安全”验证当前密码生成恢复码，也可修改密码；登录页“忘记密码”通过此前保存的恢复码重置。修改或重置后全部旧会话失效，账本和账目保留。旧恢复码重新生成/使用后失效；未设恢复码且忘记密码，或密码和恢复码同时遗失时，不能自助恢复。账本管理员不能代改其他账号密码。
+
+当前需求及本轮变更说明位于docs/requirements.md和docs/account-security-change.md。
+
 ## 文件用途
 
 - src/：手写C++应用代码。
@@ -26,7 +30,7 @@
 
 检查代码量：scripts/Measure-Code.ps1。
 检查格式：scripts/Format.ps1。
-原生桌面验证：scripts/Verify-Desktop.ps1 -IdentityFlows 或 -RecoveryFlows，每次选一套；测试使用独立临时数据。
+原生桌面验证：scripts/Verify-Desktop.ps1 -IdentityFlows、-SecurityFlows或-RecoveryFlows，每次选一套；测试使用独立临时数据。
 
 UML图及PlantUML源文件位于外层UML目录。实验报告PDF位于与code、UML并列的位置。
 本源码包不包含阶段验收文档、变更记录、UI原型、运行数据库、SDK或旧构建输出。

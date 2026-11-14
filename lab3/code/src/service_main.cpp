@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
             database.setMetadata(QStringLiteral("created_at"),
                                  QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
         }
-        database.setMetadata(QStringLiteral("application_version"), QStringLiteral("0.9.3"));
+        database.setMetadata(QStringLiteral("application_version"), QStringLiteral("0.9.4"));
         ledger::IdentityService identity(database);
         ledger::LocalServer server(identity, timeout);
         // The data-directory lock ensures this process owns any stale endpoint.

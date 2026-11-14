@@ -94,6 +94,9 @@ void UiIdentityTests::registerCreateInviteSwitchRolesAndLogout() {
                     ->text()
                     .contains(QStringLiteral("长度")));
         username->setText(QStringLiteral("甲"));
+        QTimer::singleShot(0, &window, [&] {
+            if (auto* done = window.findChild<QPushButton*>("recoveryCodeDone")) done->click();
+        });
         QTest::mouseClick(submit, Qt::LeftButton);
         QVERIFY(api.isAuthenticated());
         QVERIFY(password->text().isEmpty());

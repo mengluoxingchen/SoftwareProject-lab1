@@ -9,9 +9,10 @@ skinparam ActorBorderColor #555555
 skinparam ArrowColor #333333
 skinparam NoteBackgroundColor #FFFFFF
 skinparam NoteBorderColor #999999
-title 共享记账 - 提交与审核实现时序（0.9.3）
+title 共享记账 - 提交审核与账号安全时序（0.9.4）
 actor "记账成员" as Member
 boundary "ExpensePage" as UI
+boundary "MainWindow\n账号安全弹窗" as SecurityUI
 participant "RecoveryStore" as Local
 participant "ApiClient\nLocalServer" as IPC
 participant "IdentityService" as Identity
@@ -66,6 +67,29 @@ note over Member, UI
   提交人刷新后查看本人的审核通知。
   失败或版本变化时输入副本保留，不自动覆盖新记录。
 end note
+
+... 本人的账号安全操作，与账本角色无关 ...
+group 修改密码
+Member -> SecurityUI : 当前密码 / 新密码 / 再次确认
+SecurityUI -> IPC : password_change（当前会话）
+IPC -> Identity : 认证本人并验证当前密码与新密码
+Identity -> DB : BEGIN / 更新口令盐与摘要
+Identity -> DB : 撤销本人全部会话 / 写私有账号事件 / COMMIT
+Identity --> SecurityUI : 修改成功，返回登录页
+end
+group 忘记密码
+Member -> SecurityUI : 用户名 / 此前保存的恢复码 / 新密码及确认
+SecurityUI -> IPC : password_reset（不要求已登录）
+IPC -> Identity : 验证恢复码摘要、格式与限速
+alt 恢复码无效或未配置
+  Identity --> SecurityUI : 统一失败提示，不修改账号
+else 验证成功
+  Identity -> DB : BEGIN / 更新口令摘要 / 轮换恢复码摘要
+  Identity -> DB : 撤销全部会话 / 写私有账号事件 / COMMIT
+  Identity --> SecurityUI : 返回一次性展示的新恢复码，不自动登录
+  SecurityUI --> Member : 保存新码，再用新密码登录
+end
+end
 @enduml
 
 

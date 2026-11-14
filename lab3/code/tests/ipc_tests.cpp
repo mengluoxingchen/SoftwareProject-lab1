@@ -65,7 +65,7 @@ void IpcTests::independentClientsShareAuthorizationAndPersistentData() {
         duplicate.start();
         QVERIFY(duplicate.waitForFinished(3000));
         QCOMPARE(duplicate.exitCode(), 3);
-        QCOMPARE(alice.call("ping").value("version").toString(), QStringLiteral("0.9.3"));
+        QCOMPARE(alice.call("ping").value("version").toString(), QStringLiteral("0.9.4"));
 
         QJsonObject expense{
             {"ledger_id", book_id},
@@ -256,7 +256,7 @@ void IpcTests::disconnectedRequestIsNotReplayedAndNextRequestReconnects() {
             const auto book = api.call("create_ledger", {{"name", "Reconnect"}});
             phase = "immediate RPC burst";
             for (int request = 0; request < 1000; ++request) {
-                QCOMPARE(api.call("ping").value("version").toString(), QStringLiteral("0.9.3"));
+                QCOMPARE(api.call("ping").value("version").toString(), QStringLiteral("0.9.4"));
             }
             const QJsonObject expense{
                 {"ledger_id", book.value("id")},
@@ -669,7 +669,7 @@ void IpcTests::frameLimitsApplyPerMessageAndRejectFractionalIds() {
     api.connectToService(dir.path(), false);
     QVERIFY_THROWS_EXCEPTION(ledger::ServiceError,
                              api.call("ping", {{"pad", QString(1100000, 'x')}}));
-    QCOMPARE(api.call("ping").value("version").toString(), QString("0.9.3"));
+    QCOMPARE(api.call("ping").value("version").toString(), QString("0.9.4"));
     QLocalSocket socket;
     socket.connectToServer(ledger::localServerName(dir.path()));
     QVERIFY(socket.waitForConnected());

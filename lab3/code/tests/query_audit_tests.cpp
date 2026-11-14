@@ -460,6 +460,7 @@ void QueryAuditTests::migrationRetainsEvidenceAndExactExitCutoff() {
             "INSERT INTO operation_logs VALUES('after','book','a','approve_expense','e','After "
             "exit same second',2)"));
         for (const auto& statement : QStringList{
+                 "DROP TABLE account_recovery", "DROP TABLE account_security_events",
                  "DROP TABLE expense_requests", "DROP TABLE audit_audience",
                  "DROP TABLE audit_details", "DROP INDEX logs_query", "DROP INDEX expenses_query",
                  "ALTER TABLE memberships DROP COLUMN audit_cutoff", "PRAGMA user_version=9"}) {
@@ -468,7 +469,7 @@ void QueryAuditTests::migrationRetainsEvidenceAndExactExitCutoff() {
     }
     ledger::Database database(path);
     database.open();
-    QCOMPARE(database.schemaVersion(), 11);
+    QCOMPARE(database.schemaVersion(), 12);
     ledger::IdentityService service(database, [] { return qint64(10); });
     const auto result = service.dispatch("audit_list", {{"ledger_id", "book"}},
                                          QString("b").leftJustified(64, '0'));

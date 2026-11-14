@@ -38,6 +38,9 @@ private:
     void renderClosedLedgers();
     void showClosedLedgerLogs(const QString& id);
     void submitAuthentication();
+    void openAccountSecurity();
+    void openPasswordReset();
+    void showRecoveryCode(const QString& code, QWidget* parent = nullptr);
     void refreshWorkspace(const QString& preferred_ledger = {});
     void loadLedger();
     void renderMembers(const QJsonObject& ledger);

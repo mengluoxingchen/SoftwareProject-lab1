@@ -95,7 +95,7 @@ QSqlQuery IdentityService::query(const QString& sql, const QVariantList& paramet
 QJsonObject IdentityService::dispatch(const QString& method, const QJsonObject& parameters,
                                       const QString& token) {
     if (method == QStringLiteral("ping")) {
-        return {{"version", "0.9.3"}};
+        return {{"version", "0.9.4"}};
     }
     if (method == QStringLiteral("register")) {
         return registerUser(parameters);
@@ -103,7 +103,13 @@ QJsonObject IdentityService::dispatch(const QString& method, const QJsonObject& 
     if (method == QStringLiteral("login")) {
         return login(parameters);
     }
+    if (method == "password_reset") {
+        return resetPassword(parameters);
+    }
     const QString actor = authenticate(token);
+    if (method == "account_security") return accountSecurity(actor);
+    if (method == "password_change") return changePassword(actor, parameters);
+    if (method == "recovery_generate") return generateRecoveryCode(actor, parameters);
     if (method.startsWith("query_") || method.startsWith("audit_")) {
         return queries_.dispatch(actor, method, parameters);
     }
@@ -199,10 +205,16 @@ QJsonObject IdentityService::registerUser(const QJsonObject& parameters) {
     }
     const auto password_record = hashPassword(password);
     const QString id = identifier();
+    Transaction transaction(database_);
     query(QStringLiteral("INSERT INTO users VALUES(?,?,?,?,?,?,?)"),
           {id, username, usernameKey(username), password_record.salt, password_record.hash,
            password_record.iterations, clock_()});
-    return user(id);
+    const QString recovery_code = storeRecoveryCode(id);
+    recordSecurityEvent(id, "recovery_generated");
+    transaction.commit();
+    auto result = user(id);
+    result.insert("recovery_code", recovery_code);
+    return result;
 }
 
 QJsonObject IdentityService::login(const QJsonObject& parameters) {

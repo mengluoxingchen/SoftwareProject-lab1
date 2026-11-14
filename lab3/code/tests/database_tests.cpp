@@ -11,6 +11,9 @@
 
 namespace {
 bool removeAuditSchema(QSqlQuery& query) {
+    if (!query.exec("DROP TABLE account_recovery") ||
+        !query.exec("DROP TABLE account_security_events"))
+        return false;
     return query.exec("DROP TABLE expense_requests") && query.exec("DROP TABLE audit_audience") &&
            query.exec("DROP TABLE audit_details") && query.exec("DROP INDEX logs_query") &&
            query.exec("DROP INDEX expenses_query") &&
@@ -116,11 +119,13 @@ void DatabaseTests::upgradesVersionTenPreservingAudit() {
                      "VALUES('log','b','ledger','','','{\"marker\":\"original\"}')"));
         QVERIFY(sql.exec("INSERT INTO audit_audience VALUES('log','a')"));
         QVERIFY(sql.exec("DROP TABLE expense_requests"));
+        QVERIFY(sql.exec("DROP TABLE account_recovery"));
+        QVERIFY(sql.exec("DROP TABLE account_security_events"));
         QVERIFY(sql.exec("PRAGMA user_version=10"));
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QCOMPARE(upgraded.metadata("marker"), QString("preserved"));
     QSqlQuery sql(upgraded.connection());
     QVERIFY(sql.exec("SELECT payload FROM audit_details WHERE log_id='log'"));
@@ -140,7 +145,7 @@ void DatabaseTests::createsAndReopensPersistentDatabase() {
     {
         ledger::Database database(path);
         database.open();
-        QCOMPARE(database.schemaVersion(), 11);
+        QCOMPARE(database.schemaVersion(), 12);
         database.setMetadata(QStringLiteral("persisted"), QStringLiteral("yes"));
     }
     QVERIFY(QFile::exists(path));
@@ -187,7 +192,7 @@ void DatabaseTests::rejectsNewerDatabaseSchema() {
         future.setDatabaseName(path);
         QVERIFY(future.open());
         QSqlQuery query(future);
-        QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 12")));
+        QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 13")));
     }
     QSqlDatabase::removeDatabase(connection_name);
     ledger::Database database(path);
@@ -214,7 +219,7 @@ void DatabaseTests::upgradesVersionOneWithoutLosingMetadata() {
     QSqlDatabase::removeDatabase(name);
     ledger::Database database(path);
     database.open();
-    QCOMPARE(database.schemaVersion(), 11);
+    QCOMPARE(database.schemaVersion(), 12);
     QCOMPARE(database.metadata(QStringLiteral("existing")), QStringLiteral("preserved"));
     QSqlQuery users(database.connection());
     QVERIFY(users.exec(QStringLiteral("SELECT COUNT(*) FROM users")));
@@ -244,7 +249,7 @@ void DatabaseTests::upgradesVersionTwoWithoutLosingMemberships() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QSqlQuery sql(upgraded.connection());
     QVERIFY(sql.exec(
         QStringLiteral("SELECT role FROM memberships WHERE ledger_id='book' AND user_id='owner'")));
@@ -300,7 +305,7 @@ void DatabaseTests::upgradesVersionThreeWithoutChangingExpenseAmounts() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QCOMPARE(upgraded.metadata("existing"), QStringLiteral("preserved"));
     QSqlQuery sql(upgraded.connection());
     QVERIFY(
@@ -346,7 +351,7 @@ void DatabaseTests::upgradesVersionFourWithWorkflowTables() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QCOMPARE(upgraded.metadata("existing"), QStringLiteral("v4"));
     QSqlQuery sql(upgraded.connection());
     QVERIFY(sql.exec("SELECT COUNT(*) FROM expense_reviews"));
@@ -379,7 +384,7 @@ void DatabaseTests::upgradesVersionFiveWithoutChangingExistingHistory() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QCOMPARE(upgraded.metadata("existing"), QStringLiteral("v5"));
     QSqlQuery sql(upgraded.connection());
     QVERIFY(sql.exec("SELECT detail FROM operation_logs WHERE id='old-log'"));
@@ -417,7 +422,7 @@ void DatabaseTests::upgradesVersionSixPreservingSettlementAndAudit() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QSqlQuery sql(upgraded.connection());
     QVERIFY(sql.exec("SELECT snapshot FROM settlements WHERE id='snapshot'"));
     QVERIFY(sql.next());
@@ -458,7 +463,7 @@ void DatabaseTests::upgradesVersionSevenWithoutRewritingExpenses() {
     }
     ledger::Database upgraded(path);
     upgraded.open();
-    QCOMPARE(upgraded.schemaVersion(), 11);
+    QCOMPARE(upgraded.schemaVersion(), 12);
     QSqlQuery sql(upgraded.connection());
     QVERIFY(
         sql.exec("SELECT amount_cents,status,version,superseded,is_adjustment FROM expenses WHERE "
@@ -492,7 +497,7 @@ void DatabaseTests::upgradesVersionEightRetainsMembershipAndFinancialTables() {
     }
     ledger::Database database(path);
     database.open();
-    QCOMPARE(database.schemaVersion(), 11);
+    QCOMPARE(database.schemaVersion(), 12);
     QSqlQuery sql(database.connection());
     QVERIFY(sql.exec(
         "SELECT role,settlement_deadline,history_context FROM memberships WHERE user_id='owner'"));

@@ -97,10 +97,10 @@ QSqlDatabase Database::connection() const { return connection_; }
 
 void Database::migrate() {
     const int version = schemaVersion();
-    if (version > 11) {
+    if (version > 12) {
         throw std::runtime_error("The database was created by a newer application version.");
     }
-    if (version == 11) {
+    if (version == 12) {
         return;
     }
     requireSuccess(connection_.transaction(), QStringLiteral("Cannot start database migration"),
@@ -446,20 +446,38 @@ void Database::migrate() {
                 appendAuditEvidence(connection_, log_id, true);
             }
         }
+        if (version < 11) {
+            execute(
+                "CREATE TABLE expense_requests(ledger_id TEXT NOT NULL REFERENCES ledgers(id),"
+                "user_id TEXT NOT NULL REFERENCES users(id),request_key TEXT NOT NULL,"
+                "method TEXT NOT NULL,fingerprint TEXT NOT NULL,expense_id TEXT NOT NULL "
+                "REFERENCES expenses(id),version INTEGER NOT NULL,status TEXT NOT NULL,"
+                "created_at INTEGER NOT NULL,PRIMARY KEY(ledger_id,user_id,request_key))");
+            execute(
+                "CREATE TRIGGER expense_request_no_update BEFORE UPDATE ON expense_requests "
+                "BEGIN SELECT RAISE(ABORT,'Write receipts are immutable'); END");
+            execute(
+                "CREATE TRIGGER expense_request_no_delete BEFORE DELETE ON expense_requests WHEN "
+                "NOT "
+                "EXISTS(SELECT 1 FROM ledgers WHERE id=OLD.ledger_id AND status='deleted') "
+                "BEGIN SELECT RAISE(ABORT,'Write receipts are immutable'); END");
+        }
         execute(
-            "CREATE TABLE expense_requests(ledger_id TEXT NOT NULL REFERENCES ledgers(id),"
-            "user_id TEXT NOT NULL REFERENCES users(id),request_key TEXT NOT NULL,"
-            "method TEXT NOT NULL,fingerprint TEXT NOT NULL,expense_id TEXT NOT NULL "
-            "REFERENCES expenses(id),version INTEGER NOT NULL,status TEXT NOT NULL,"
-            "created_at INTEGER NOT NULL,PRIMARY KEY(ledger_id,user_id,request_key))");
+            "CREATE TABLE account_recovery(user_id TEXT PRIMARY KEY REFERENCES users(id),"
+            "salt BLOB NOT NULL CHECK(length(salt)=16),hash BLOB NOT NULL CHECK(length(hash)=32),"
+            "iterations INTEGER NOT NULL,created_at INTEGER NOT NULL)");
         execute(
-            "CREATE TRIGGER expense_request_no_update BEFORE UPDATE ON expense_requests "
-            "BEGIN SELECT RAISE(ABORT,'Write receipts are immutable'); END");
+            "CREATE TABLE account_security_events(id TEXT PRIMARY KEY,user_id TEXT NOT NULL "
+            "REFERENCES users(id),action TEXT NOT NULL CHECK(action IN "
+            "('password_changed','recovery_generated','password_reset')),created_at INTEGER NOT "
+            "NULL)");
         execute(
-            "CREATE TRIGGER expense_request_no_delete BEFORE DELETE ON expense_requests WHEN NOT "
-            "EXISTS(SELECT 1 FROM ledgers WHERE id=OLD.ledger_id AND status='deleted') "
-            "BEGIN SELECT RAISE(ABORT,'Write receipts are immutable'); END");
-        execute(QStringLiteral("PRAGMA user_version = 11"));
+            "CREATE TRIGGER account_security_no_update BEFORE UPDATE ON account_security_events "
+            "BEGIN SELECT RAISE(ABORT,'Account history is immutable'); END");
+        execute(
+            "CREATE TRIGGER account_security_no_delete BEFORE DELETE ON account_security_events "
+            "BEGIN SELECT RAISE(ABORT,'Account history is immutable'); END");
+        execute(QStringLiteral("PRAGMA user_version = 12"));
         requireSuccess(connection_.commit(), QStringLiteral("Cannot commit database migration"),
                        connection_);
     } catch (...) {

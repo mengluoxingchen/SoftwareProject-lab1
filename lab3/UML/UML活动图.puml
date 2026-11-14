@@ -7,9 +7,32 @@ skinparam activityBorderColor #777777
 skinparam ArrowColor #333333
 skinparam activityDiamondBackgroundColor #FFFFFF
 skinparam activityDiamondBorderColor #777777
-title 账目提交与审核活动图
-|普通成员|
+title 账目提交审核与账号安全活动图 0.9.4
+|用户或普通成员|
 start
+if (修改或重置密码？) then (是)
+  if (已登录修改密码？) then (是)
+    :填写当前密码和两次新密码;
+    |系统|
+    :认证本人会话与当前密码;
+  else (忘记密码)
+    |用户或普通成员|
+    :填写用户名、恢复码和两次新密码;
+    |系统|
+    :验证恢复码摘要、格式与限速;
+  endif
+  if (身份及新密码校验通过？) then (否)
+    :统一失败提示，不修改账号;
+    stop
+  else (是)
+    :同事务更新口令、撤销本人会话、记录私有事件;
+    :恢复码重置时同时轮换恢复码并仅当次展示;
+    :保留用户编号、账本及账目，返回正常登录;
+    stop
+  endif
+else (账目提交)
+endif
+|普通成员|
 :填写账目信息及实际付款人;
 :选择费用承担人及分摊方式并提交;
 note right

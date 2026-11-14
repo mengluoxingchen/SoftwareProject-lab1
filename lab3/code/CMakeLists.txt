@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(SharedLedger VERSION 0.9.3 LANGUAGES CXX)
+project(SharedLedger VERSION 0.9.4 LANGUAGES CXX)
 
 # The bootstrap detects the real localized compiler prefix rather than relying on
 # CMake's locale-sensitive autodetection on Chinese Windows installations.
@@ -45,7 +45,7 @@ target_link_libraries(ledger_client PUBLIC ledger_protocol Qt6::Network)
 add_library(ledger_query STATIC src/query/query_service.cpp src/query/query_service.h)
 target_link_libraries(ledger_query PUBLIC ledger_core ledger_domain ledger_finance)
 
-add_library(ledger_identity STATIC src/identity/identity_service.cpp src/identity/password.cpp src/identity/ledger_lifecycle.cpp src/identity/membership_service.cpp)
+add_library(ledger_identity STATIC src/identity/identity_service.cpp src/identity/account_security.cpp src/identity/password.cpp src/identity/ledger_lifecycle.cpp src/identity/membership_service.cpp)
 add_library(ledger_settlement STATIC src/settlement/settlement_service.cpp src/settlement/settlement_service.h)
 target_link_libraries(ledger_settlement PUBLIC ledger_core ledger_domain ledger_finance)
 target_link_libraries(ledger_identity PUBLIC ledger_core ledger_expense ledger_settlement ledger_query Qt6::Network)
@@ -56,7 +56,7 @@ target_link_libraries(ledger_server PUBLIC ledger_identity ledger_protocol Qt6::
 add_library(ledger_recovery STATIC src/recovery/recovery_store.cpp src/recovery/recovery_store.h)
 target_include_directories(ledger_recovery PUBLIC src)
 target_link_libraries(ledger_recovery PUBLIC Qt6::Core Crypt32)
-add_library(ledger_ui STATIC src/ui/expense_recovery_ui.cpp src/ui/main_window.cpp src/ui/main_window.h src/ui/branding.cpp src/ui/branding.h src/ui/expense_page.cpp src/ui/expense_page.h src/ui/expense_details_dialog.cpp src/ui/expense_details_dialog.h src/ui/settlement_page.cpp src/ui/settlement_page.h src/ui/table_style.cpp src/ui/table_style.h src/ui/ledger_lifecycle_ui.cpp src/ui/finance_dialogs.cpp src/ui/finance_dialogs.h src/ui/expense_adjustment_ui.cpp src/ui/membership_ui.cpp src/ui/browse_page.cpp src/ui/browse_page.h)
+add_library(ledger_ui STATIC src/ui/account_security_ui.cpp src/ui/expense_recovery_ui.cpp src/ui/main_window.cpp src/ui/main_window.h src/ui/branding.cpp src/ui/branding.h src/ui/expense_page.cpp src/ui/expense_page.h src/ui/expense_details_dialog.cpp src/ui/expense_details_dialog.h src/ui/settlement_page.cpp src/ui/settlement_page.h src/ui/table_style.cpp src/ui/table_style.h src/ui/ledger_lifecycle_ui.cpp src/ui/finance_dialogs.cpp src/ui/finance_dialogs.h src/ui/expense_adjustment_ui.cpp src/ui/membership_ui.cpp src/ui/browse_page.cpp src/ui/browse_page.h)
 target_link_libraries(ledger_ui PUBLIC ledger_client ledger_domain ledger_recovery Qt6::Widgets)
 
 qt_add_executable(ledger_service WIN32 src/service_main.cpp)
@@ -155,6 +155,13 @@ if(BUILD_TESTING)
     add_test(NAME database_foundation COMMAND database_tests
         -o "${CMAKE_CURRENT_BINARY_DIR}/database-test-results.xml,junitxml" -o "-,txt")
 
+    qt_add_executable(account_security_tests tests/account_security_tests.cpp)
+    set_target_properties(account_security_tests PROPERTIES WIN32_EXECUTABLE FALSE)
+    target_link_libraries(account_security_tests PRIVATE ledger_identity Qt6::Test)
+    ledger_enable_warnings(account_security_tests)
+    add_test(NAME account_password_and_recovery COMMAND account_security_tests
+        -o "${CMAKE_CURRENT_BINARY_DIR}/account-security-test-results.xml,junitxml" -o "-,txt")
+
     qt_add_executable(identity_tests tests/identity_tests.cpp)
     set_target_properties(identity_tests PROPERTIES WIN32_EXECUTABLE FALSE)
     target_link_libraries(identity_tests PRIVATE ledger_identity Qt6::Test)
@@ -185,6 +192,14 @@ if(BUILD_TESTING)
         -o "${CMAKE_CURRENT_BINARY_DIR}/ipc-test-results.xml,junitxml" -o "-,txt")
 
     # Run explicitly through Verify-Desktop.ps1 -IdentityFlows on a Windows desktop.
+    qt_add_executable(ui_security_tests tests/ui_security_tests.cpp)
+    set_target_properties(ui_security_tests PROPERTIES WIN32_EXECUTABLE FALSE)
+    target_link_libraries(ui_security_tests PRIVATE ledger_ui Qt6::Test)
+    target_compile_definitions(ui_security_tests PRIVATE LEDGER_SERVICE_PATH="$<TARGET_FILE:ledger_service>")
+    qt_add_resources(ui_security_tests security_test_styles PREFIX "/" FILES resources/styles.qss resources/chevron-down.png)
+    add_dependencies(ui_security_tests ledger_service)
+    ledger_enable_warnings(ui_security_tests)
+
     qt_add_executable(ui_identity_tests tests/ui_identity_tests.cpp)
     set_target_properties(ui_identity_tests PROPERTIES WIN32_EXECUTABLE FALSE)
     target_link_libraries(ui_identity_tests PRIVATE ledger_ui Qt6::Test)

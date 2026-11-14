@@ -156,7 +156,11 @@ QWidget* MainWindow::createLoginPage() {
     auth_submit_ = button(QStringLiteral("登录"), "authSubmit", card);
     auth_submit_->setDefault(true);
     form->addWidget(auth_submit_);
-    connect(auth_mode_, &QTabBar::currentChanged, this, [this](int index) {
+    auto* forgot = button(QStringLiteral("忘记密码"), "forgotPasswordButton", card);
+    form->addWidget(forgot);
+    connect(forgot, &QPushButton::clicked, this, &MainWindow::openPasswordReset);
+    connect(auth_mode_, &QTabBar::currentChanged, this, [this, forgot](int index) {
+        forgot->setVisible(index == 0);
         confirmation_->setVisible(index == 1);
         password_hint_->setVisible(index == 1);
         password_->setPlaceholderText(index == 1 ? QStringLiteral("设置密码（8–32位）")
@@ -212,6 +216,9 @@ QWidget* MainWindow::createWorkspace() {
     toolbar->addWidget(account_);
     auto* refresh = button(QStringLiteral("刷新"), "refreshWorkspace", content);
     auto* logout = button(QStringLiteral("退出登录"), "logoutButton", content);
+    auto* security = button(QStringLiteral("账号安全"), "accountSecurityButton", content);
+    toolbar->addWidget(security);
+    connect(security, &QPushButton::clicked, this, &MainWindow::openAccountSecurity);
     toolbar->addWidget(refresh);
     toolbar->addWidget(logout);
     body->addLayout(toolbar);
@@ -381,6 +388,7 @@ QWidget* MainWindow::createLedgerPage() {
 
 void MainWindow::submitAuthentication() {
     auth_error_->clear();
+    auth_error_->setStyleSheet({});
     if (auth_mode_->currentIndex() == 1) {
         const QString error = PasswordPolicy::registrationError(password_->text());
         if (!error.isEmpty()) {
@@ -394,10 +402,13 @@ void MainWindow::submitAuthentication() {
     }
     auth_submit_->setEnabled(false);
     QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString recovery_code;
     try {
         if (auth_mode_->currentIndex() == 1) {
-            api_.call(QStringLiteral("register"),
-                      {{"username", username_->text()}, {"password", password_->text()}});
+            recovery_code = api_.call(QStringLiteral("register"), {{"username", username_->text()},
+                                                                   {"password", password_->text()}})
+                                .value("recovery_code")
+                                .toString();
         }
         user_ = api_.login(username_->text(), password_->text());
         password_->clear();
@@ -410,6 +421,7 @@ void MainWindow::submitAuthentication() {
     }
     QApplication::restoreOverrideCursor();
     auth_submit_->setEnabled(true);
+    if (!recovery_code.isEmpty()) showRecoveryCode(recovery_code);
 }
 
 void MainWindow::refreshWorkspace(const QString& preferred_ledger) {

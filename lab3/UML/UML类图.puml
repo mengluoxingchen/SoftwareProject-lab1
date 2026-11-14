@@ -5,11 +5,14 @@ skinparam linetype ortho
 skinparam nodesep 70
 skinparam ranksep 90
 skinparam defaultFontName Microsoft YaHei
-title 多人共享记账系统核心类图
+title 多人共享记账系统核心类图 0.9.4
 class "用户" as User {
   - 用户编号: String
   - 用户名: String
   + 登录()
+  + 修改密码(当前密码, 新密码)
+  + 生成恢复码(当前密码)
+  + 使用恢复码重置密码()
 }
 
 class "账本" as Ledger {
@@ -126,6 +129,24 @@ class "操作日志" as Log {
   - 审核结果: String [可选]
 }
 
+class "账号恢复凭据" as AccountRecovery {
+  - 盐与恢复码摘要: Bytes
+  - 生成时间: DateTime
+  + 轮换旧恢复码()
+}
+class "私有账号安全事件" as SecurityEvent {
+  - 账号编号: String
+  - 动作: String
+  - 时间: DateTime
+}
+User "1" -- "0..1" AccountRecovery : 本人恢复凭据
+User "1" -- "0..*" SecurityEvent : 私有事件
+note right of AccountRecovery
+  恢复码仅当次展示，后台不保存明文。
+  修改密码须验证当前密码；重置须验证恢复码。
+  更新口令、轮换恢复码、撤销会话和事件同事务。
+  账本管理员不得代改其他账号密码。
+end note
 User "1" -- "0..*" Membership : 具有
 Ledger "1" -- "0..*" Membership : 包含
 Expense "1" -- "0..*" Share : 费用承担明细

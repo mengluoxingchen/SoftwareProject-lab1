@@ -1,15 +1,15 @@
-[CmdletBinding()]
-param([switch]$Packaged, [switch]$IdentityFlows, [switch]$ExpenseFlows, [switch]$WorkflowFlows, [switch]$SettlementFlows, [switch]$FinanceFlows, [switch]$MembershipFlows, [switch]$QueryFlows, [switch]$RecoveryFlows)
+﻿[CmdletBinding()]
+param([switch]$Packaged, [switch]$IdentityFlows, [switch]$ExpenseFlows, [switch]$WorkflowFlows, [switch]$SettlementFlows, [switch]$FinanceFlows, [switch]$MembershipFlows, [switch]$QueryFlows, [switch]$RecoveryFlows, [switch]$SecurityFlows)
 
 . (Join-Path $PSScriptRoot 'Tools.ps1')
 $tools = Initialize-LabEnvironment
 $verificationRoot = Join-Path $tools.Root 'build\verification'
 New-Item -ItemType Directory -Path $verificationRoot -Force | Out-Null
-if ($IdentityFlows -or $ExpenseFlows -or $WorkflowFlows -or $SettlementFlows -or $FinanceFlows -or $MembershipFlows -or $QueryFlows -or $RecoveryFlows) {
+if ($SecurityFlows -or $IdentityFlows -or $ExpenseFlows -or $WorkflowFlows -or $SettlementFlows -or $FinanceFlows -or $MembershipFlows -or $QueryFlows -or $RecoveryFlows) {
     if ($Packaged) { throw 'The desktop scenario tests run from the development build.' }
-    if (([int]$IdentityFlows.IsPresent + [int]$ExpenseFlows.IsPresent + [int]$WorkflowFlows.IsPresent + [int]$SettlementFlows.IsPresent + [int]$FinanceFlows.IsPresent + [int]$MembershipFlows.IsPresent + [int]$QueryFlows.IsPresent + [int]$RecoveryFlows.IsPresent) -gt 1) { throw 'Choose one desktop scenario suite per run.' }
+    if (([int]$SecurityFlows.IsPresent + [int]$IdentityFlows.IsPresent + [int]$ExpenseFlows.IsPresent + [int]$WorkflowFlows.IsPresent + [int]$SettlementFlows.IsPresent + [int]$FinanceFlows.IsPresent + [int]$MembershipFlows.IsPresent + [int]$QueryFlows.IsPresent + [int]$RecoveryFlows.IsPresent) -gt 1) { throw 'Choose one desktop scenario suite per run.' }
     $env:LEDGER_SCREENSHOT_DIR = $verificationRoot
-    $scenario = if ($RecoveryFlows) { 'recovery' } elseif ($QueryFlows) { 'query' } elseif ($MembershipFlows) { 'membership' } elseif ($FinanceFlows) { 'finance' } elseif ($SettlementFlows) { 'settlement' } elseif ($WorkflowFlows) { 'workflow' } elseif ($ExpenseFlows) { 'expense' } else { 'identity' }
+    $scenario = if ($SecurityFlows) { 'security' } elseif ($RecoveryFlows) { 'recovery' } elseif ($QueryFlows) { 'query' } elseif ($MembershipFlows) { 'membership' } elseif ($FinanceFlows) { 'finance' } elseif ($SettlementFlows) { 'settlement' } elseif ($WorkflowFlows) { 'workflow' } elseif ($ExpenseFlows) { 'expense' } else { 'identity' }
     $testProgram = Join-Path $tools.Root "build\msvc-release\ui_${scenario}_tests.exe"
     $testResult = Join-Path $verificationRoot "ui-$scenario-test-results.xml"
     $testProcess = Start-Process -FilePath $testProgram -ArgumentList @('-platform', 'windows', '-o', ('"' + $testResult + ',junitxml"')) -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $verificationRoot "$scenario-ui.stdout.log") -RedirectStandardError (Join-Path $verificationRoot "$scenario-ui.stderr.log")

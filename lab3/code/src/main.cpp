@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     QApplication application(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("SoftwareEngineeringLab"));
     QCoreApplication::setApplicationName(QStringLiteral("SharedLedger"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.9.3"));
+    QCoreApplication::setApplicationVersion(QStringLiteral("0.9.4"));
     QApplication::setStyle(QStringLiteral("Fusion"));
     QApplication::setWindowIcon(ledger::sharedLedgerIcon());
 
