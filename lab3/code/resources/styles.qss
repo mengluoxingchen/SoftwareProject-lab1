@@ -1,0 +1,107 @@
+QWidget {
+    font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    color: #26334b;
+}
+QWidget#applicationRoot { background: #f4f6fb; }
+QFrame#sidebar { background: #29003d; border: none; }
+QLabel#brand, QLabel#brandCompact { color: #ffffff; font-family: "DengXian", "Microsoft YaHei UI", sans-serif; font-weight: 600; }
+QLabel#brand { font-size: 27px; }
+QLabel#brandCompact { font-size: 22px; }
+QLabel#sidebarCaption { color: #ad8cba; font-size: 12px; padding-left: 10px; }
+QLabel#sidebarFooter { color: #b49bc1; font-size: 12px; line-height: 1.8; padding: 18px 8px; }
+QListWidget#navigation { background: transparent; border: none; outline: none; color: #dccce5; }
+QListWidget#navigation::item { height: 46px; padding-left: 16px; margin-bottom: 8px; border-radius: 9px; }
+QListWidget#navigation::item:selected { background: #694080; color: white; font-weight: bold; }
+QListWidget#navigation::item:hover:!selected { background: #432052; }
+QLabel#breadcrumb, QLabel#footer { color: #8190aa; font-size: 12px; }
+QLabel#accountBadge { background: #eee6f7; color: #64318d; border-radius: 7px; padding: 8px 15px; }
+QFrame#separator { background: #e0e5ef; }
+QLabel#pageTitle { color: #2b193f; font-size: 28px; font-weight: bold; }
+QLabel#pageDescription { color: #71809a; }
+QLabel#querySummary, QLabel#auditSummary { background: white; color: #493158; border: 1px solid #ddd2e9; border-radius: 8px; padding: 12px 14px; font-weight: 600; }
+QLabel#querySettlementHelp { background: #f4eef9; color: #643a80; border-left: 3px solid #9b6abf; border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+QLabel#queryScopeNote, QLabel#auditScopeNote { color: #71809a; font-size: 12px; padding: 2px 0px 6px 0px; }
+QStackedWidget#pages { background: transparent; }
+QFrame#emptyCard { background: white; border: 1px solid #e3e9f2; border-radius: 14px; }
+QLabel#emptyIcon { background: #f0e9f9; color: #6a2e9e; font-size: 30px; border-radius: 16px; min-width: 76px; min-height: 76px; }
+QLabel#emptyTitle { color: #30213e; font-size: 21px; font-weight: bold; }
+QLabel#emptyDescription { color: #8291aa; font-size: 14px; }
+QFrame#loginCard { background: white; border: 1px solid #e3e9f2; border-radius: 16px; }
+QLabel#loginHeadline { color: white; font-size: 35px; font-weight: bold; }
+QLabel#loginCaption { color: #c6afd5; font-size: 17px; }
+QLabel#authError { color: #b42318; font-size: 13px; }
+QLabel#passwordHint { color: #7a6b92; font-size: 12px; }
+QLabel#sectionTitle { font-size: 18px; font-weight: bold; color: #30213e; }
+QLabel#ledgerSummary { background: white; padding: 20px; border: 1px solid #e3e9f2; border-radius: 10px; font-weight: bold; }
+QLineEdit, QComboBox { background: white; border: 1px solid #d6deed; border-radius: 7px; padding: 10px 12px; min-height: 20px; selection-background-color: #783bb0; selection-color: white; }
+QLineEdit:hover, QComboBox:hover { border-color: #b6a0ce; }
+QLineEdit:focus, QComboBox:focus { border-color: #7736b4; }
+QLineEdit:disabled, QComboBox:disabled { background: #eef0f5; color: #929caf; border-color: #dce1eb; }
+QComboBox { padding-right: 32px; }
+QComboBox::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 25px; border-left: 1px solid #e4daee; border-top-right-radius: 6px; border-bottom-right-radius: 6px; background: #f3edf8; }
+QComboBox::down-arrow { image: url(:/resources/chevron-down.png); width: 12px; height: 8px; }
+QComboBox QAbstractItemView { background: white; color: #26334b; border: 1px solid #c8acdf; selection-background-color: #eee4f8; selection-color: #493158; outline: none; }
+QComboBox QAbstractItemView::item { min-height: 28px; padding: 4px 8px; }
+QPlainTextEdit { background: white; border: 1px solid #d6deed; border-radius: 7px; padding: 10px; selection-background-color: #783bb0; selection-color: white; }
+QPlainTextEdit:focus { border-color: #7736b4; }
+QToolTip { background: #342145; color: white; border: 1px solid #76538d; padding: 7px 10px; }
+QPushButton { background: #6500a8; color: white; border: 1px solid #6500a8; border-radius: 7px; padding: 8px 15px; min-height: 20px; font-weight: 600; }
+QPushButton:hover:enabled { background: #7a27b9; border-color: #7a27b9; }
+QPushButton:pressed:enabled { background: #4e0085; border-color: #4e0085; }
+QPushButton:focus:enabled { border: 2px solid #c6a2e2; padding: 7px 14px; }
+QPushButton:disabled { color: #929caf; background: #e9ecf2; border-color: #d4dbe7; }
+QTableWidget QPushButton { padding: 6px 12px; min-height: 18px; border-radius: 6px; font-size: 13px; }
+QTableWidget QPushButton:focus:enabled { padding: 5px 11px; }
+QPushButton[danger="true"], QPushButton#withdrawExpense, QPushButton#confirmWithdrawExpense { background: #b42318; border-color: #b42318; color: white; }
+QPushButton[danger="true"]:hover:enabled, QPushButton#withdrawExpense:hover:enabled, QPushButton#confirmWithdrawExpense:hover:enabled { background: #932018; border-color: #932018; }
+QPushButton[danger="true"]:pressed:enabled, QPushButton#withdrawExpense:pressed:enabled, QPushButton#confirmWithdrawExpense:pressed:enabled { background: #791b14; border-color: #791b14; }
+QPushButton[danger="true"]:disabled, QPushButton#withdrawExpense:disabled, QPushButton#confirmWithdrawExpense:disabled { color: #929caf; background: #e9ecf2; border-color: #d4dbe7; }
+QDialog { background: #f7f5fb; }
+QTabBar::tab { padding: 12px 30px; background: transparent; border-bottom: 2px solid #e4e8f0; }
+QTabBar::tab:selected { color: #6000a8; border-bottom-color: #6000a8; font-weight: bold; }
+QTableWidget { background: white; alternate-background-color: #faf8fd; border: 1px solid #c4cddd; gridline-color: #c4cddd; border-radius: 9px; selection-background-color: #ece1f7; selection-color: #30213e; }
+QTableWidget:focus { border-color: #a386bd; }
+QHeaderView::section { background: #f1edf8; color: #5e4676; font-weight: 600; border: none; border-right: 1px solid #c9c5d6; border-bottom: 1px solid #c9c5d6; padding: 11px 12px; }
+QTableWidget::item { border: none; padding: 0px 8px; }
+QTableWidget::item:hover:!selected { background: #f4effa; }
+QScrollBar:vertical { background: #f0edf5; width: 10px; border: none; margin: 0px; }
+QScrollBar::handle:vertical { background: #c3b3d3; border-radius: 5px; min-height: 28px; }
+QScrollBar::handle:vertical:hover { background: #a88ac1; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; border: none; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
+QScrollBar:horizontal { background: #f0edf5; height: 10px; border: none; margin: 0px; }
+QScrollBar::handle:horizontal { background: #c3b3d3; border-radius: 5px; min-width: 28px; }
+QScrollBar::handle:horizontal:hover { background: #a88ac1; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; border: none; }
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: none; }
+QLineEdit#expenseSplitValue { margin: 5px 8px; padding: 5px 8px; }
+QLineEdit#expenseSplitValue:disabled { color: #7f8b9e; background: #f1f4f9; border-color: #e1e6ef; }
+QLabel#expenseMemberHelp { color: #718098; font-size: 12px; }
+QLabel#expenseSplitHint { color: #64318d; background: #f5effa; border-radius: 6px; padding: 8px 10px; font-size: 12px; }
+QLabel#expensePreview, QLabel#expensePaymentExplanation { color: #3d2057; background: #f5effa; border: 1px solid #ded1eb; border-radius: 7px; padding: 10px; }
+QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; }
+QFrame#expenseFormCard { background: white; border: 1px solid #e3e9f2; border-radius: 12px; }
+QFrame#settlementCard { background: white; border: 1px solid #e3e9f2; border-radius: 12px; }
+QFrame#mySettlementCard { background: #fbf8fe; border: 1px solid #c8acdf; border-radius: 12px; }
+QLabel#personalSectionTitle { color: #493158; font-size: 14px; font-weight: bold; }
+QFrame#personalMetric { background: white; border: 1px solid #e4deec; border-radius: 8px; }
+QLabel#personalMetricCaption { color: #788399; font-size: 12px; }
+QLabel[personalMetricValue="true"] { color: #382347; font-size: 20px; font-weight: bold; }
+QFrame#personalDetailSection { background: white; border: 1px solid #e4deec; border-radius: 8px; }
+QLabel#personalEmpty { color: #7c879a; font-size: 13px; padding: 8px 0px; }
+QTableWidget#mySettlementDirections, QTableWidget#myRepaymentHistory { border-radius: 0px; }
+QTableWidget#mySettlementDirections QHeaderView::section, QTableWidget#myRepaymentHistory QHeaderView::section { font-size: 12px; padding: 7px 8px; }
+QFrame#personalScopeNotes { background: #f1f3f7; border: none; border-radius: 7px; }
+QLabel#personalScopeTitle { color: #667187; font-size: 12px; font-weight: bold; }
+QLabel#mySettlementScope { color: #778196; font-size: 12px; }
+QLabel[summaryValue="true"] { color: #3d2057; font-size: 24px; font-weight: bold; }
+QLabel#settlementSuggestions { color: #64318d; background: #f5effa; padding: 10px; border-radius: 6px; }
+QDateTimeEdit { background: white; border: 1px solid #d6deed; border-radius: 7px; padding: 10px 32px 10px 12px; min-height: 20px; selection-background-color: #783bb0; selection-color: white; }
+QDateTimeEdit:hover { border-color: #b6a0ce; }
+QDateTimeEdit:focus { border-color: #7736b4; }
+QDateTimeEdit:disabled { background: #eef0f5; color: #929caf; border-color: #dce1eb; }
+QDateTimeEdit::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 25px; border-left: 1px solid #e4daee; border-top-right-radius: 6px; border-bottom-right-radius: 6px; background: #f3edf8; }
+QDateTimeEdit::down-arrow { image: url(:/resources/chevron-down.png); width: 12px; height: 8px; }
+QWidget[invalid="true"] { border: 1px solid #d92d20; }
+

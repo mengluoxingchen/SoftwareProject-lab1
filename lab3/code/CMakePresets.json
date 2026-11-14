@@ -1,0 +1,41 @@
+﻿{
+    "version":  6,
+    "cmakeMinimumRequired":  {
+                                 "major":  3,
+                                 "minor":  24,
+                                 "patch":  0
+                             },
+    "configurePresets":  [
+                             {
+                                 "name":  "msvc-release",
+                                 "displayName":  "MSVC x64 / Qt 6 / Release",
+                                 "generator":  "Ninja",
+                                 "binaryDir":  "${sourceDir}/build/${presetName}",
+                                 "cacheVariables":  {
+                                                        "CMAKE_BUILD_TYPE":  "Release",
+                                                        "CMAKE_CXX_COMPILER":  "cl.exe",
+                                                        "CMAKE_EXPORT_COMPILE_COMMANDS":  "ON",
+                                                        "CMAKE_PREFIX_PATH":  "$env{QT_ROOT}",
+                                                        "BUILD_TESTING":  "ON"
+                                                    }
+                             }
+                         ],
+    "buildPresets":  [
+                         {
+                             "name":  "msvc-release",
+                             "configurePreset":  "msvc-release"
+                         }
+                     ],
+    "testPresets":  [
+                        {
+                            "name":  "msvc-release",
+                            "configurePreset":  "msvc-release",
+                            "output":  {
+                                           "outputOnFailure":  true
+                                       },
+                            "execution":  {
+                                              "noTestsAction":  "error"
+                                          }
+                        }
+                    ]
+}

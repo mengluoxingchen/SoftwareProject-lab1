@@ -1,0 +1,71 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #F2F2F2
+skinparam ParticipantBorderColor #777777
+skinparam ActorBorderColor #555555
+skinparam ArrowColor #333333
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #999999
+title 共享记账 - 提交与审核实现时序（0.9.3）
+actor "记账成员" as Member
+boundary "ExpensePage" as UI
+participant "RecoveryStore" as Local
+participant "ApiClient\nLocalServer" as IPC
+participant "IdentityService" as Identity
+participant "ExpenseService\nexpense_workflow" as Expense
+participant "audit_store" as Audit
+database "SQLite" as DB
+actor "管理员" as Admin
+
+note over UI, DB
+成功场景：必填/分摊已合法；相似记录如有，用户已确认。
+上次发送结果不明确时，先查询本人的写入回执；
+已成功则提示核对服务器账目，不再次入账。
+end note
+Member -> UI : 核对输入并提交审核
+UI -> Local : 原子保存表单和操作编号\n不保存登录令牌或编辑锁
+Local --> UI : 本地副本已保存
+UI -> IPC : expense_submit（同一操作编号）
+IPC -> Identity : 校验帧 / 分派认证请求
+Identity -> DB : 认证会话
+DB --> Identity : 当前操作人
+Identity -> Expense : 提交账目（操作人 / 会话）
+Expense -> DB : 复验账本角色、回执、版本和锁
+DB --> Expense : 当前状态 / 尚无成功回执
+Expense -> Expense : 校验成员、金额、承担合计及重复
+Expense -> DB : BEGIN / 写账目与分摊
+Expense -> Audit : 保存操作及受影响人证据
+Audit -> DB : 同事务写日志 / 金额 / 受众
+Expense -> DB : 写成功回执 / COMMIT
+Expense --> Identity : 返回已保存账目及版本
+Identity --> IPC : 提交结果
+IPC --> UI : 待审核
+UI -> Local : 清理本次已完成副本
+UI --> Member : 显示待审核账目
+
+... 管理员稍后审核 ...
+Admin -> UI : 核对详情，选择通过或填写原因驳回
+UI -> IPC : expense_review（决定 / 原因 / 版本）
+IPC -> Identity : 认证审核请求
+Identity -> DB : 验证认证会话
+Identity -> Expense : 审核账目
+Expense -> DB : 复验管理员、待审状态、版本及无锁
+Expense -> Expense : 驳回原因必填；相似支出最多通过一条
+Expense -> DB : BEGIN / 保存审核历史与新状态
+Expense -> Audit : 记录审核人、结果及相关人员
+Audit -> DB : 同事务保存日志证据
+Expense -> DB : 保存创建人通知 / COMMIT
+Expense --> Identity : 审核结果
+Identity --> IPC : 审核结果
+IPC --> UI : 已通过 / 已驳回
+UI --> Admin : 更新页面
+note over Member, UI
+  提交人刷新后查看本人的审核通知。
+  失败或版本变化时输入副本保留，不自动覆盖新记录。
+end note
+@enduml
+
+

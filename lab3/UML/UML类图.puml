@@ -1,0 +1,149 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 90
+skinparam defaultFontName Microsoft YaHei
+title 多人共享记账系统核心类图
+class "用户" as User {
+  - 用户编号: String
+  - 用户名: String
+  + 登录()
+}
+
+class "账本" as Ledger {
+  - 账本编号: String
+  - 账本名称: String
+  + 邀请成员()
+  + 交接负责人()
+  + 组合查询账目(条件)
+}
+
+class "账本成员" as Membership {
+  - 角色: 成员角色
+  - 成员状态: String
+  - 退出时间: DateTime [可选]
+  - 退出时可查看账目编号: List<String> [可选]
+  - 结清截止日期: Date [可选]
+  + 退出账本()
+}
+
+class "账目" as Expense {
+  - 账目编号: String
+  - 所属账本: 账本
+  - 创建人: 账本成员
+  - 实际付款人: 账本成员
+  - 消费金额: Decimal
+  - 消费日期: Date
+  - 消费说明: String
+  - 消费类别: String [可选]
+  - 分摊方式: String
+  - 状态: 账目状态
+  - 结算后调整: Boolean
+  - 原始账目编号: String [调整时]
+  - 被调整替代: Boolean
+  - 调整原因: String [调整时]
+  + 保存草稿()
+  + 提交()
+  + 修改()
+  + 撤回()
+  + 有修改历史(): Boolean
+}
+
+class "分摊明细" as Share {
+  - 费用承担人: 账本成员
+  - 分摊金额: Decimal
+  - 分摊比例: Decimal [可选]
+}
+
+class "审核记录" as Review {
+  - 审核人: 账本成员
+  - 审核时间: DateTime
+  - 审核结果: String
+  - 驳回原因: String [驳回时必填]
+}
+
+class "账目修改历史" as Revision {
+  - 修改人: 账本成员
+  - 修改时间: DateTime
+  - 修改前内容: String
+  - 修改前金额: Decimal
+  - 修改后金额: Decimal
+  - 修改原因: String
+}
+
+class "退款记录" as Refund {
+  - 实际收款人: 账本成员
+  - 登记人: 账本成员
+  - 退款金额: Decimal
+  - 退款时间: DateTime
+  - 退款原因: String
+}
+
+class "结算记录" as Settlement {
+  - 结算时间: DateTime
+  - 纳入账目编号: List<String>
+  + 生成结算结果()
+}
+
+class "结算明细（历史快照）" as Balance {
+  - 成员: 账本成员
+  - 垫付金额: Decimal
+  - 应承担金额: Decimal
+  - 已支付给别人: Decimal
+  - 当时未结清金额: Decimal
+}
+
+class "成员当前余额" as CurrentBalance {
+  - 所属账本: 账本
+  - 成员: 账本成员
+  - 垫付金额: Decimal
+  - 应承担金额: Decimal
+  - 已支付给别人: Decimal
+  - 当前未结清金额: Decimal
+  + 根据调整重新计算()
+}
+
+class "还款记录" as Repayment {
+  - 所属账本: 账本
+  - 付款人: 账本成员
+  - 收款人: 账本成员
+  - 还款金额: Decimal
+  - 还款时间: DateTime
+}
+
+class "操作日志" as Log {
+  - 账本标识: String
+  - 操作人标识: String
+  - 操作类型: String
+  - 操作时间: DateTime
+  - 操作结果: String
+  - 关联对象标识: String
+  - 操作原因: String [按需记录]
+  - 修改前金额: Decimal [可选]
+  - 修改后金额: Decimal [可选]
+  - 审核结果: String [可选]
+}
+
+User "1" -- "0..*" Membership : 具有
+Ledger "1" -- "0..*" Membership : 包含
+Expense "1" -- "0..*" Share : 费用承担明细
+note right of Expense
+  实际付款人是先支付费用的人。
+  费用承担人由分摊明细确定，可不包含实际付款人。
+  共同消费与替他人垫付使用相同的支出模型。
+  正式提交时至少一位承担人，承担金额合计等于消费金额。
+  草稿可暂存未完成的分摊信息。
+  结算后纠错新增调整，保留原支出和原结算快照。
+  退款同时冲减实际收款人的垫付与费用承担。
+end note
+Expense "1" -- "0..*" Review : 审核历史
+Expense "1" -- "0..*" Revision : 修改历史
+Expense "1" -- "0..*" Refund : 退款
+Ledger "1" -- "0..*" Settlement : 结算
+Settlement "1" -- "0..*" Balance : 保存快照
+@enduml
+
+
+

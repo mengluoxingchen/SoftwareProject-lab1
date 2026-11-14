@@ -1,0 +1,56 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam componentStyle uml2
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 55
+top to bottom direction
+title 共享记账 - Lab3 实现组件图（0.9.3）
+
+package "Windows 桌面客户端" as Client {
+  component "六个业务页面\nQt Widgets / ledger_ui" as UI
+  component "本地输入恢复\nRecoveryStore" as Recovery
+  component "认证会话与请求\nApiClient" as API
+  UI --> Recovery
+  UI --> API
+}
+artifact "加密恢复文件\nQSaveFile + DPAPI" as Files
+Recovery --> Files : 每账号 / 账本 / 窗口隔离
+
+package "本机统一业务服务 ledger_service.exe" as Server {
+  component "命名管道与帧校验\nLocalServer" as IPC
+  component "登录 / 账本 / 成员 / 分派\nIdentityService" as Identity
+  component "账目管理 / 审核与状态\nExpenseService" as Expense
+  component "退款 / 结算后补记与纠错\nFinanceService + projection" as Finance
+  component "结算快照 / 余额 / 还款\nSettlementService" as Settlement
+  component "组合查询 / 统计 / 日志读取\nQueryService" as Query
+  component "操作日志证据与受众写入\naudit_store" as Audit
+  IPC --> Identity : JSON 请求 / 认证令牌
+  Identity --> Expense
+  Identity --> Finance
+  Identity --> Settlement
+  Identity --> Query
+  Expense ..> Finance
+  Settlement ..> Finance
+  Query ..> Finance
+}
+database "SQLite / schema11\n业务记录 + 历史快照 + 审计依据\nexpense_requests 提交回执" as DB
+API --> IPC : QLocalSocket / 当前 Windows 用户
+Server --> DB : 权限复验、参数绑定、事务
+Files -[hidden]-> DB
+note right of DB
+  账目、分摊、回执和日志同事务提交。
+  历史快照和审计证据不可改写。
+  业务删除后，原操作日志仍保留。
+end note
+note left of Audit
+  六个原设计职责映射到服务模块；
+  日志写入与原业务事务共用连接。
+  客户端不直接访问业务 SQLite。
+end note
+@enduml
+
+

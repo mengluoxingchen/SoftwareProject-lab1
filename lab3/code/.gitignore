@@ -1,0 +1,18 @@
+# Local SDKs, builds, generated UI code, and runtime data.
+/.tools/
+/build/
+/dist/
+/tmp/
+/data/
+/老师提交材料/
+/最终提交材料/
+/.vs/
+*.user
+*.suo
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+code/CMakeUserPresets.json
+
